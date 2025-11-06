@@ -1,7 +1,6 @@
 #ifndef MYVECTOR_HPP
 #define MYVECTOR_HPP
 
-
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
@@ -74,20 +73,12 @@ class MyVector {
 
     // copy assignment
     MyVector& operator=(const MyVector& other) {
-        if (this == &other) {
-            return *this;
+        if (this != &other) {
+            MyVector tmp(other);
+            std::swap(m_data, tmp.m_data);
+            std::swap(m_size, tmp.m_size);
+            std::swap(m_capacity, tmp.m_capacity);
         }
-
-        T* tmp = new T[other.m_capacity];
-        for (size_t i = 0; i < other.m_size; i++) {
-            tmp[i] = other.m_data[i];
-        }
-
-        delete[] m_data;
-        m_data = tmp;
-        m_size = other.m_size;
-        m_capacity = other.m_capacity;
-
         return *this;
     }
 
