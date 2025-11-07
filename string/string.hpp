@@ -446,13 +446,17 @@ class MyString {
     char* m_data;
     static const size_t npos = 4294967295;
 
-    // TODO: this has a bug. capacity can exceed MAX_SIZE
     void reserve_if_needed(size_t added = 0) {
         if (npos - added < m_size) {
             throw std::out_of_range("Max size exceeded");
         }
         size_t new_capacity = (m_capacity == 0) ? 1 : m_capacity;
-        while (m_size + added >= new_capacity - NULL_TERM) new_capacity *= 2;
+        // we cant multiply if its more than half of the limit
+        if (new_capacity >= npos / 2) {
+            new_capacity += new_capacity / 4;
+        } else {
+            while (m_size + added >= new_capacity - NULL_TERM) new_capacity *= 2;
+        }
         reserve(new_capacity);
     }
 
