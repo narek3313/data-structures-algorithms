@@ -137,6 +137,16 @@ void test_comparisons() {
     std::cout << "comparisons success\n";
 }
 
+void test_lexicographical_compare() {
+    MyString s1("abc"), s2("abd"), s3("abc"), s4("ab");
+    assert(MyString::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end()));
+    assert(!MyString::lexicographical_compare(s2.begin(), s2.end(), s1.begin(), s1.end()));
+    assert(!MyString::lexicographical_compare(s1.begin(), s1.end(), s3.begin(), s3.end()));
+    assert(!MyString::lexicographical_compare(s1.begin(), s1.end(), s4.begin(), s4.end()));
+    assert(MyString::lexicographical_compare(s4.begin(), s4.end(), s1.begin(), s1.end()));
+    std::cout << "lexicographical_compare success\n";
+}
+
 int main() {
     test_constructors();
     test_assignment();
@@ -149,6 +159,7 @@ int main() {
     test_iterators();
     test_c_str();
     test_comparisons();
+    test_lexicographical_compare();
     std::cout << "\n✅ All tests passed\n";
     return 0;
 }

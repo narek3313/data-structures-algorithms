@@ -28,9 +28,7 @@ class MyString {
 
         Iterator(pointer ptr) { m_ptr = ptr; }
         Iterator(const Iterator& other) { m_ptr = other.m_ptr; }
-
-        /* overriding operators */
-
+/* overriding operators */
         reference operator*() { return *m_ptr; }
         pointer operator->() { return m_ptr; }
 
@@ -242,7 +240,17 @@ class MyString {
     /* compare */
 
     static bool lexicographical_compare(Iterator first1, Iterator last1, Iterator first2,
-                                        Iterator last2) {}
+                                        Iterator last2) {
+        for (; (first1 != last1) && (first2 != last2); ++first1, (void)++first2) {
+            if (*first1 < *first2) {
+                return true;
+            }
+            if (*first2 < *first1) {
+                return false;
+            }
+        }
+        return (first1 == last1) && (first2 != last2);
+    }
 
     char& operator[](size_t index) { return m_data[index]; }
     const char& operator[](size_t index) const { return m_data[index]; }
