@@ -1,13 +1,14 @@
-#include "string.hpp"
+// #include "string.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
 int main() {
-    MyString str = "abcdef";
-    MyString substr = str.substr(0);
-    MyString str2 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaa";
-    str2.insert(5, str);
+    std::string str = "Bitch";
+    std::string str2 = "bitch";
 
-    std::cout << str2 << std::endl;
+    bool res = std::lexicographical_compare(str.begin(), str.end(), str2.begin(), str2.end());
+
+    std::cout << res;
 }

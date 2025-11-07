@@ -1,18 +1,63 @@
 #ifndef MYSTRING_HPP
 #define MYSTRING_HPP
-#include <ios>
-#include <iostream>
-#include <stdexcept>
+
+#include <cstddef>
+#include <iterator>
 #define NULL_TERM 1
 #define DEF_CAPACITY 15
 
 #include <cstdint>
+#include <iostream>
 #include <ostream>
+#include <stdexcept>
 #include <utility>
+
 class MyString {
     using size_t = uint64_t;
 
    public:
+    struct Iterator {
+        /* defining tags */
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type = std::ptrdiff_t;
+        using value_type = char;
+        using pointer = char*;
+        using reference = char&;
+
+        /* constructors */
+
+        Iterator(pointer ptr) { m_ptr = ptr; }
+        Iterator(const Iterator& other) { m_ptr = other.m_ptr; }
+
+        /* overriding operators */
+
+        reference operator*() { return *m_ptr; }
+        pointer operator->() { return m_ptr; }
+
+        Iterator& operator++() {
+            m_ptr++;
+            return *this;
+        }
+
+        Iterator operator++(int) {
+            Iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; }
+        friend bool operator!=(const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; }
+
+        Iterator& operator=(const Iterator& other) {
+            m_ptr = other.m_ptr;
+            return *this;
+        }
+
+        ~Iterator() { m_ptr = nullptr; }
+
+       private:
+        pointer m_ptr;
+    };
     /* constructors */
     MyString() {
         m_size = 0;
@@ -150,10 +195,7 @@ class MyString {
     }
 
     MyString& operator+=(const MyString& other) {
-        std::cout << "Old capacity: " << m_capacity << std::endl;
-
         reserve_if_needed(other.m_size);
-        std::cout << "New capacity: " << m_capacity << std::endl;
 
         size_t new_size = m_size + other.m_size;
 
@@ -168,10 +210,42 @@ class MyString {
         return *this;
     }
 
+    bool operator==(const MyString& other) {
+        if (m_size != other.m_size) {
+            return false;
+        }
+
+        for (size_t i = 0; i < m_size; i++) {
+            if (m_data[i] != other[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const MyString& other) {
+        if (m_size != other.m_size) {
+            return true;
+        }
+
+        for (size_t i = 0; i < m_size; i++) {
+            if (m_data[i] != other[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /* compare */
+
+    static bool lexicographical_compare(Iterator first1, Iterator last1, Iterator first2,
+                                        Iterator last2) {}
+
     char& operator[](size_t index) { return m_data[index]; }
     const char& operator[](size_t index) const { return m_data[index]; }
 
-    /* size, data mutating */
+    /* size, data manipulations */
 
     // NOTE: capacity also includes the null terminator.
     //  When you want to reserve room for a
@@ -228,6 +302,7 @@ class MyString {
         delete[] m_data;
 
         m_data = tmp;
+
         m_data[m_size] = '\0';
     }
 
@@ -301,28 +376,41 @@ class MyString {
         return substr;
     }
 
-    // TODO: WTF IS THIS
+    // TODO: there is a better way to do this, but i dont know how yet
     MyString& insert(size_t pos, const MyString& str, size_t len = npos) {
         if (len > str.m_size) {
             len = str.m_size;
         }
         reserve_if_needed(len);
 
-        MyString right_substr = substr(pos);
-        MyString left_substr = substr(0, pos);
-        left_substr.append(str);
+        MyString left_substr = this->substr(0, pos);
+        MyString right_substr = this->substr(pos);
+        left_substr += str;
 
         left_substr += right_substr;
         *this = left_substr;
-
-        m_size += len;
 
         return *this;
     }
 
     MyString& erase(size_t pos = 0, size_t len = npos) {
+        MyString left_substr = this->substr(0, pos);
+        MyString right_substr = this->substr(pos + len, npos);
+
+        left_substr += right_substr;
+
+        *this = left_substr;
+
         return *this;
     }
+
+    /* iterators */
+
+    Iterator begin() { return Iterator(&m_data[0]); }
+    Iterator end() { return Iterator(&m_data[m_size]); }
+
+    const Iterator begin() const { return Iterator(&m_data[0]); }
+    const Iterator end() const { return Iterator(&m_data[m_capacity + 1]); }
 
     /* getters */
     size_t size() const { return m_size; }
@@ -356,7 +444,7 @@ class MyString {
     size_t m_size;
     size_t m_capacity;
     char* m_data;
-    static const size_t npos = -1;
+    static const size_t npos = 4294967295;
 
     // TODO: this has a bug. capacity can exceed MAX_SIZE
     void reserve_if_needed(size_t added = 0) {
