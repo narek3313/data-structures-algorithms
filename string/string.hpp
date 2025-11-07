@@ -34,11 +34,13 @@ class MyString {
         reference operator*() { return *m_ptr; }
         pointer operator->() { return m_ptr; }
 
+        // prefix
         Iterator& operator++() {
             m_ptr++;
             return *this;
         }
 
+        // postfix
         Iterator operator++(int) {
             Iterator tmp = *this;
             ++(*this);
