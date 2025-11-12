@@ -87,6 +87,21 @@ int main() {
     assert(v6.capacity() >= old_cap + 10);
     std::cout << "Reserve passed" << std::endl;
 
+    MyVector<int> v7 = {1, 2, 3, 4, 5};
+    int expected[] = {1, 2, 3, 4, 5};
+
+    size_t i = 0;
+    for (const int item : v7) {
+        assert(item == expected[i]);
+        ++i;
+    }
+    assert(i == 5);
+    std::cout << "Iterator test passed" << std::endl;
+
+    
+    std::cout << "Should print the vector: ";
+    std::cout << v7 << std::endl;
+
     std::cout << "All tests passed!" << std::endl;
     return 0;
 }

@@ -2,6 +2,7 @@
 #define MYVECTOR_HPP
 
 #include <cstdint>
+#include <initializer_list>
 #include <iostream>
 #include <stdexcept>
 
@@ -11,10 +12,63 @@ class MyVector {
    public:
     using size_t = uint32_t;
 
+    struct Iterator {
+        /* defining tags */
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type = std::ptrdiff_t;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&;
+
+        /* constructors */
+
+        Iterator(pointer ptr) { m_ptr = ptr; }
+        Iterator(const Iterator& other) { m_ptr = other.m_ptr; }
+        /* overriding operators */
+        reference operator*() { return *m_ptr; }
+        pointer operator->() { return m_ptr; }
+
+        // prefix
+        Iterator& operator++() {
+            m_ptr++;
+            return *this;
+        }
+
+        // postfix
+        Iterator operator++(int) {
+            Iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; }
+        friend bool operator!=(const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; }
+
+        Iterator& operator=(const Iterator& other) {
+            m_ptr = other.m_ptr;
+            return *this;
+        }
+
+        ~Iterator() { m_ptr = nullptr; }
+
+       private:
+        pointer m_ptr;
+    };
+
     MyVector() {
         this->m_size = 0;
         this->m_capacity = 0;
         this->m_data = nullptr;
+    }
+
+    MyVector(std::initializer_list<T> list) {
+        m_size = list.size();
+        m_capacity = m_size;
+        m_data = new T[m_size];
+        size_t i = 0;
+        for (const T& item : list) {
+            m_data[i++] = item;
+        }
     }
 
     MyVector(size_t size, T value = T{}) {
@@ -98,6 +152,19 @@ class MyVector {
 
         return *this;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const MyVector<T>& v) {
+        os << "[";
+        for (size_t i = 0; i < v.m_size; ++i) {
+            if (i > 0) os << ", ";
+            os << v[i];
+        }
+        os << "]";
+        return os;
+    }
+
+    Iterator begin() const { return Iterator(&m_data[0]); }
+    Iterator end() const { return Iterator(&m_data[m_size]); }
 
     // ensures capacity is set without changing internal data of vector or size
     void reserve(size_t new_capacity) {
